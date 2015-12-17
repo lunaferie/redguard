@@ -9,7 +9,7 @@
 # v_1.1
 
 # trust ip are not added to deny.hosts 
-trust = ['217.74.64.220']
+trust = ['']
 
 # path to hosts.deny
 deny = "/etc/hosts.deny"
