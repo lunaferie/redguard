@@ -11,9 +11,6 @@
 # trust ip are not added to deny.hosts 
 trust = ['']
 
-# default path to hosts.deny
-deny = "/etc/hosts.deny"
-
 ####################################
 
 import os
