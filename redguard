@@ -11,7 +11,7 @@
 # trust ip are not added to deny.hosts 
 trust = ['217.74.64.220']
 
-# path to hosts.deny
+# default path to hosts.deny
 deny = "/etc/hosts.deny"
 
 ####################################
@@ -89,12 +89,7 @@ for u in unique:
 		state = 1
 	    else:
 		state = 2
-    		f = open(deny, 'a')
-    		f.write("# bantime: " + bantime)
-    		f.write("\n")
-    		f.write(u)
-    		f.write("\n")
-    		f.close()
+		os.system("echo 'sshd: %s' >> /etc/hosts.deny" % u)
 		print "WARNING: %s - has been blocked" % u
 
 if state == 0 or state == 1:
