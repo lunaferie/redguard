@@ -1,0 +1,102 @@
+#!/usr/bin/python
+#
+# script to scan failed ssh attempt in secure log and ban ip through add ip to deny.hosts
+# 
+# it's recommended logrotate your secure log files (10 failed attempts == ban)
+# or add all your`s ip to 'trust' parrametr
+#
+# by lunaferie
+# v_1.1
+
+# trust ip are not added to deny.hosts 
+trust = ['217.74.64.220']
+
+# path to hosts.deny
+deny = "/etc/hosts.deny"
+
+####################################
+
+import os
+import re
+import time
+
+bantime =  time.strftime("%Y-%m-%d__%H:%M")
+
+log_path = '/var/log/secure'
+ip_to_ban = os.popen("grep -i 'Failed password' /var/log/secure").read()
+find_ip = re.findall('from [0-9]+.[0-9]+.[0-9]+.[0-9]+', ip_to_ban)
+
+unique = []
+in_deny = []
+
+lvl_1 = []
+lvl_2 = []
+lvl_3 = []
+lvl_4 = []
+lvl_5 = []
+lvl_6 = []
+lvl_7 = []
+lvl_8 = []
+lvl_9 = []
+lvl_10 = []
+
+for i in find_ip:
+    ip =  i.split()[-1]
+
+    if ip in lvl_1 and ip not in lvl_2:
+	lvl_2.append(ip)
+    elif ip in lvl_2 and ip not in lvl_3:
+	lvl_3.append(ip)
+    elif ip in lvl_3 and ip not in lvl_4:
+	lvl_4.append(ip)
+    elif ip in lvl_4 and ip not in lvl_5:
+	lvl_5.append(ip)
+    elif ip in lvl_5 and ip not in lvl_6:
+	lvl_6.append(ip)
+    elif ip in lvl_6 and ip not in lvl_7:
+	lvl_7.append(ip)
+    elif ip in lvl_7 and ip not in lvl_8:
+	lvl_8.append(ip)
+    elif ip in lvl_8 and ip not in lvl_9:
+	lvl_9.append(ip)
+    elif ip in lvl_9 and ip not in lvl_10:
+	lvl_10.append(ip)
+    else:
+	lvl_1.append(ip) 
+
+for ban_ip in lvl_10:
+    if ban_ip in unique:
+	pass
+    else:
+	unique.append(ban_ip)
+
+state = 0
+unique.sort()
+
+deny_hosts = os.popen("grep sshd: /etc/hosts.deny").read()
+deny = re.findall("sshd: [0-9].*", deny_hosts)
+
+for block in deny:
+    b =  block.replace('sshd: ', '')
+    in_deny.append(b)
+
+for u in unique:
+    for t in trust:
+	if u == t:
+	    pass
+        else:
+	    if u in in_deny:
+		state = 1
+	    else:
+		state = 2
+    		f = open(deny, 'a')
+    		f.write("# bantime: " + bantime)
+    		f.write("\n")
+    		f.write(u)
+    		f.write("\n")
+    		f.close()
+		print "WARNING: %s - has been blocked" % u
+
+if state == 0 or state == 1:
+    print "INFO: no ip to block"
+
